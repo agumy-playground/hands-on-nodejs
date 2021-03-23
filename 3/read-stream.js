@@ -14,25 +14,25 @@ const stream = require("stream");
 //   })
 //   .on("end", () => console.log("end"));
 
-// class HelloReabableStream extends stream.Readable {
-//   constructor(options) {
-//     super(options);
-//     this.languages = ["JavaScript", "Python", "Java", "C#"];
-//   }
+class HelloReabableStream extends stream.Readable {
+  constructor(options) {
+    super(options);
+    this.languages = ["JavaScript", "Python", "Java", "C#"];
+  }
 
-//   _read(size) {
-//     console.log("_read");
-//     let language;
-//     while ((language = this.languages.shift())) {
-//       if (!this.push(`Hello, ${language}!\n`)) {
-//         console.log("読み込み中断");
-//         return;
-//       }
-//     }
-//     console.log("読み込み完了");
-//     this.push(null);
-//   }
-// }
+  _read(size) {
+    console.log("_read");
+    let language;
+    while ((language = this.languages.shift())) {
+      if (!this.push(`Hello, ${language}!\n`)) {
+        console.log("読み込み中断");
+        return;
+      }
+    }
+    console.log("読み込み完了");
+    this.push(null);
+  }
+}
 
 // const helloReadableStream = new HelloReabableStream();
 // helloReadableStream
@@ -52,21 +52,21 @@ const stream = require("stream");
 
 // console.log(fs.readFileSync("dest.txt", "utf-8"));
 
-// class DelayLogStream extends stream.Writable {
-//   constructor(options) {
-//     super({ objectMode: true, ...options });
-//   }
+class DelayLogStream extends stream.Writable {
+  constructor(options) {
+    super({ objectMode: true, ...options });
+  }
 
-//   _write(chunk, encoding, callback) {
-//     console.log("_write");
+  _write(chunk, encoding, callback) {
+    console.log("_write");
 
-//     const { message, delay } = chunk;
-//     setTimeout(() => {
-//       console.log(message);
-//       callback();
-//     }, delay);
-//   }
-// }
+    const { message, delay } = chunk;
+    setTimeout(() => {
+      console.log(message);
+      callback();
+    }, delay);
+  }
+}
 
 // const delayLogStream = new DelayLogStream();
 
@@ -84,7 +84,6 @@ class LineTransformStream extends stream.Transform {
     console.log("_transform()");
     const lines = (chunk + this.remaining).split(/\n/);
     this.remaining = lines.pop();
-    console.log(lines)
     for (const line of lines) {
       this.push({ message: line, delay: line.length + 100 });
     }
@@ -101,14 +100,29 @@ class LineTransformStream extends stream.Transform {
   }
 }
 
-const lineTransformStream = new LineTransformStream();
-lineTransformStream.on("readable", () => {
-  let chunk;
-  while ((chunk = lineTransformStream.read()) !== null) {
-    console.log(chunk);
-  }
-});
+// const lineTransformStream = new LineTransformStream();
+// lineTransformStream.on("readable", () => {
+//   let chunk;
+//   while ((chunk = lineTransformStream.read()) !== null) {
+//     console.log(chunk);
+//   }
+// });
 
-lineTransformStream.write("foo\nbar");
-lineTransformStream.write("baz");
-lineTransformStream.end();
+// lineTransformStream.write("foo\nbar");
+// lineTransformStream.write("baz");
+// lineTransformStream.end();
+
+new HelloReabableStream()
+  .pipe(new LineTransformStream())
+  .pipe(new DelayLogStream())
+  .on("finish", () => console.log("done"));
+
+// new HelloReabableStream({ highWaterMark: 0 })
+//   .pipe(
+//     new LineTransformStream({
+//       writeableHighWaterMark: 0,
+//       readableHighWaterMark: 0,
+//     })
+//   )
+//   .pipe(new DelayLogStream({ highWaterMark: 0 }))
+//   .on("finish", () => console.log("完了"));
