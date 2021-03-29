@@ -1,5 +1,7 @@
 "use strict";
 const fibonacci = require("../app/fibonacci");
-const { workerData, parentPort } = require("worker_threads");
+const { parentPort } = require("worker_threads");
 
-parentPort.postMessage(fibonacci(workerData));
+// message event の関しによりメインスレッドからのメッセージの受信を待機
+// 受信したrあフィボナッチ数を計算して結果をめいんすれっどに送信
+parentPort.on("message", (n) => parentPort.postMessage(fibonacci(n)));

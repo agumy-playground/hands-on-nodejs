@@ -1,17 +1,20 @@
 "use strict";
 
 const http = require("http");
-const { Worker } = require("worker_threads");
+const cpuCount = require("os").cpus().length;
+const ThreadPool = require("./thread-pool");
+
+// cpu core数と同じサイズのスレッドプールを生成
+
+const threadPool = new ThreadPool(cpuCount, `${__dirname}/fibonacci.js`);
 
 http
-  .createServer((req, res) => {
+  .createServer(async (req, res) => {
     const n = Number(req.url.substr(1));
     if (Number.isNaN(n)) {
       return res.end();
     }
-    new Worker(`${__dirname}/fibonacci.js`, { workerData: n }).on(
-      "message",
-      (result) => res.end(result.toString())
-    );
+    const result = await threadPool.executeInThread(n);
+    res.end(result.toString());
   })
   .listen(3000);
