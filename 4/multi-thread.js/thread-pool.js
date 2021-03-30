@@ -35,5 +35,6 @@ module.exports = class ThreadPool {
         ? this.#process(worker, request)
         : this.availableWorkers.push(worker);
     });
+    worker.postMessage(arg);
   }
 };

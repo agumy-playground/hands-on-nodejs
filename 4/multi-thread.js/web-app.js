@@ -1,11 +1,9 @@
 "use strict";
-
 const http = require("http");
 const cpuCount = require("os").cpus().length;
 const ThreadPool = require("./thread-pool");
 
-// cpu core数と同じサイズのスレッドプールを生成
-
+// CPUコア数と同じサイズのスレッドプールを生成
 const threadPool = new ThreadPool(cpuCount, `${__dirname}/fibonacci.js`);
 
 http
